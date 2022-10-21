@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPU programming types &mdash; GPU programming: why, when and how?  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sphinx_lesson.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sphinx_rtd_theme_ext_color_contrast.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/minipres.js"></script>
+        <script src="../_static/tabs.js"></script>
+        <script>let toggleHintShow = 'Click to show';</script>
+        <script>let toggleHintHide = 'Click to hide';</script>
+        <script>let toggleOpenOnPrint = 'true';</script>
+        <script src="../_static/togglebutton.js"></script>
+        <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex/" />
+    <link rel="search" title="Search" href="../search/" />
+    <link rel="next" title="Problem example: heat equation" href="../example-heat/" />
+    <link rel="prev" title="Preparing code for GPU porting" href="../gpu-porting/" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../" class="icon icon-home"> GPU programming: why, when and how?
+            <img src="../_static/ENCCS.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">The lesson</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gpu-history/">Why GPUs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu-hardware/">Introduction to GPU hardware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu-problems/">What problems fit to GPU?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu-concepts/">GPU programming concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu-software/">GPU software environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu-porting/">Preparing code for GPU porting</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GPU programming types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#directive-based-frameworks">Directive-based frameworks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#execution-model">Execution model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-model">Memory Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#directives">Directives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-regions">Parallel regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clauses">Clauses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vector-addition">Vector addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reduction">Reduction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pros-and-cons-of-directive-based-frameworks">Pros and cons of directive-based frameworks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kernel-based-approaches">Kernel-based approaches</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Vector addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Reduction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pros-and-cons-of-kernel-based-frameworks">Pros and cons of kernel-based frameworks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-language-support">High-level language support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cost-benefit-analysis">Cost-benefit analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../example-heat/">Problem example: heat equation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-reference/">Quick Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/">Instructor’s guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../">GPU programming: why, when and how?</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../" class="icon icon-home"></a> &raquo;</li>
+      <li>GPU programming types</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ENCCS/GPU-programming/blob/main/content/gpu-levels.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gpu-programming-types">
+<span id="gpu-levels"></span><h1>GPU programming types<a class="headerlink" href="#gpu-programming-types" title="Permalink to this heading"></a></h1>
+<div class="admonition-questions questions admonition" id="questions-0">
+<p class="admonition-title">Questions</p>
+<ul class="simple">
+<li><p>What are the key differences between different GPU programming approaches?</p></li>
+<li><p>How should I choose which framework to use for my project?</p></li>
+</ul>
+</div>
+<div class="admonition-objectives objectives admonition" id="objectives-0">
+<p class="admonition-title">Objectives</p>
+<ul class="simple">
+<li><p>Understand basic examples in different GPU programming frameworks</p></li>
+<li><p>Perform a quick cost-benefit analysis in the context of own code projects</p></li>
+</ul>
+</div>
+<div class="admonition-instructor-note instructor-note admonition" id="instructor-note-0">
+<p class="admonition-title">Instructor note</p>
+<ul class="simple">
+<li><p>X min teaching</p></li>
+<li><p>X min exercises</p></li>
+</ul>
+</div>
+<section id="directive-based-frameworks">
+<h2>Directive-based frameworks<a class="headerlink" href="#directive-based-frameworks" title="Permalink to this heading"></a></h2>
+<p>WRITEME begin</p>
+<ul class="simple">
+<li><p>What is OpenMP offloading?</p></li>
+<li><p>What is OpenACC?</p></li>
+<li><p>What are the differences between the two?</p></li>
+</ul>
+<p>WRITEME end</p>
+<p>OpenMP is de facto standard for threaded based parallelism. It is relatively easy to
+implement. The whole technology suite contains the library routines, the compiler
+directives and environment variables. The parallelization is done providing “hints”
+(directives) about the regions of code which are targeted for parallelization.
+The compiler then chooses how to implement these hints as best as possible.
+The compiler directives are comments in Fortran and pragmas in C/C++.
+If there is no OpenMP support in the system they become comments and the code works just
+as any other serial code.</p>
+<section id="execution-model">
+<h3>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this heading"></a></h3>
+<p>OpenMP and OpenACC use the fork-join model of parallel execution. The program begins as a single
+thread of execution, the <strong>master</strong> thread. Everything is executed sequentially until the
+first parallel region construct is encountered.</p>
+<figure class="align-center">
+<img alt="../_images/threads.png" src="../_images/threads.png" />
+</figure>
+<p>When a parallel region is encountered, master thread creates a group of threads,
+becomes the master of this group of threads, and is assigned the thread index 0 within
+the group. There is an implicit barrier at the end of the parallel regions.</p>
+</section>
+<section id="memory-model">
+<h3>Memory Model<a class="headerlink" href="#memory-model" title="Permalink to this heading"></a></h3>
+<p>WRITEME begin</p>
+<ul class="simple">
+<li><p>shared vs private variables</p></li>
+<li><p>global memory</p></li>
+<li><p>etc</p></li>
+</ul>
+<p>WRITEME end</p>
+</section>
+<section id="directives">
+<h3>Directives<a class="headerlink" href="#directives" title="Permalink to this heading"></a></h3>
+<p>In OpenMP/OpenACC the compiler directives are specified by using <strong>#pragma</strong> in C/C++ or as
+special comments identified by unique sentinels in Fortran. Compilers can ingnore the
+directives if the support for OpenMP/OpenACC is not enabled.</p>
+</section>
+<section id="parallel-regions">
+<h3>Parallel regions<a class="headerlink" href="#parallel-regions" title="Permalink to this heading"></a></h3>
+<p>The compiler directives are used for various purposes: for thread creation, workload
+distribution (work sharing), data-environment management, serializing sections of code or
+for synchronization of work among the threads. The parallel regions are created using the
+<strong>parallel</strong> construct. When this construct is encounter additional thread are forked to
+carry out the work enclose in it.</p>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/omp-parallel.png"><img alt="../_images/omp-parallel.png" src="../_images/omp-parallel.png" style="width: 310.09999999999997px; height: 464.09999999999997px;" /></a>
+<figcaption>
+<p><span class="caption-text">Outside of a parallel region there is only one thread, while inside there are N threads</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="clauses">
+<h3>Clauses<a class="headerlink" href="#clauses" title="Permalink to this heading"></a></h3>
+<p>TODO: simplify paragraphs on clauses</p>
+<p>Together with compiler directives, OpenMP provides <strong>clauses</strong> that  can used to control
+the parallelism of regions of code. The clauses specify additional behaviour the user wants
+to occur and they refer to how the variables are visible to the threads (private or shared),
+synchronization, scheduling, control, etc. The clauses are appended in the code to the
+directives.</p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h3>
+<section id="vector-addition">
+<h4>Vector addition<a class="headerlink" href="#vector-addition" title="Permalink to this heading"></a></h4>
+<p>Example of a trivially parallelizable problem using the <em>loop</em> workshare construct:</p>
+<p>TODO: test, simplify and harmonize all versions below</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">OpenMP C/C++</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">OpenMP Fortran</button><button aria-controls="panel-0-0-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-2" name="0-2" role="tab" tabindex="-1">OpenACC C/C++</button><button aria-controls="panel-0-0-3" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-3" name="0-3" role="tab" tabindex="-1">OpenACC Fortran</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;math.h&gt;</span><span class="cp"></span>
+<span class="cp">#define NX 102400</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">argv</span><span class="p">[]){</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">vecA</span><span class="p">[</span><span class="n">NX</span><span class="p">],</span><span class="n">vecB</span><span class="p">[</span><span class="n">NX</span><span class="p">],</span><span class="n">vecC</span><span class="p">[</span><span class="n">NX</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Initialize vectors */</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NX</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">vecA</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pow</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="mi">-1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">vecB</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="cp">#pragma omp parallel</span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cp">#pragma omp for</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NX</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">           </span><span class="n">vecC</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vecA</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vecB</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">program </span><span class="n">dotproduct</span><span class="w"></span>
+<span class="w">    </span><span class="k">implicit none</span>
+
+<span class="k">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">nx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">102400</span><span class="w"></span>
+<span class="w">    </span><span class="kt">real</span><span class="p">,</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">vecA</span><span class="p">,</span><span class="n">vecB</span><span class="p">,</span><span class="n">vecC</span><span class="w"></span>
+<span class="w">    </span><span class="kt">real</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">r</span><span class="o">=</span><span class="mf">0.2</span><span class="w"></span>
+<span class="w">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">! Initialization of vectors</span>
+<span class="w">    </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">nx</span><span class="w"></span>
+<span class="w">       </span><span class="n">vecA</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="o">**</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">       </span><span class="n">vecB</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"></span>
+<span class="w">    </span><span class="k">end do</span><span class="w"></span>
+
+<span class="w">    </span><span class="c">!$omp parallel</span>
+<span class="w">    </span><span class="c">!$omp do</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">NX</span><span class="w"></span>
+<span class="w">            </span><span class="n">vecC</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vecA</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vecB</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">enddo</span><span class="w"></span>
+<span class="w">    </span><span class="c">!$omp end do</span>
+<span class="w">    </span><span class="c">!$omp end parallel</span>
+<span class="k">end program </span><span class="n">dotproduct</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-2" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-2" name="0-2" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#ifdef _OPENACC</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;openacc.h&gt;</span><span class="cp"></span>
+<span class="cp">#endif</span>
+
+<span class="cp">#define NX 102400</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">vecA</span><span class="p">[</span><span class="n">NX</span><span class="p">],</span><span class="w"> </span><span class="n">vecB</span><span class="p">[</span><span class="n">NX</span><span class="p">],</span><span class="w"> </span><span class="n">vecC</span><span class="p">[</span><span class="n">NX</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">sum</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Initialization of the vectors */</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NX</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">vecA</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pow</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="mi">-1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">vecB</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="cp">#pragma acc data copy(vecA,vecB,vecC)</span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cp">#pragma acc parallel</span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cp">#pragma acc loop</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NX</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">vecC</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vecA</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vecB</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-3" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-3" name="0-3" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div></div>
+</section>
+<section id="reduction">
+<h4>Reduction<a class="headerlink" href="#reduction" title="Permalink to this heading"></a></h4>
+<p>Example of a <em>reduction</em> loop without race condition by using private variables:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">OpenMP C/C++</button><button aria-controls="panel-1-1-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-1" name="1-1" role="tab" tabindex="-1">OpenMP Fortran</button><button aria-controls="panel-1-1-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-2" name="1-2" role="tab" tabindex="-1">OpenACC C/C++</button><button aria-controls="panel-1-1-3" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-3" name="1-3" role="tab" tabindex="-1">OpenACC Fortran</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma omp parallel for shared(x,y,n) private(i) reduction(+:asum){</span>
+<span class="w">   </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">         </span><span class="n">asum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">   </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-1-1-1" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-1" name="1-1" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="c">!$omp parallel do shared(x,y,n) private(i) reduction(+:asum)</span>
+<span class="w">   </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<span class="w">      </span><span class="n">asum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">y</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="k">end do</span><span class="w"></span>
+<span class="c">!$omp end parallel</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-1-1-2" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-2" name="1-2" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-1-1-3" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-3" name="1-3" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div></div>
+</section>
+</section>
+<section id="pros-and-cons-of-directive-based-frameworks">
+<h3>Pros and cons of directive-based frameworks<a class="headerlink" href="#pros-and-cons-of-directive-based-frameworks" title="Permalink to this heading"></a></h3>
+<p>WRITEME</p>
+</section>
+</section>
+<section id="kernel-based-approaches">
+<h2>Kernel-based approaches<a class="headerlink" href="#kernel-based-approaches" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>CUDA</p></li>
+<li><p>HIP</p></li>
+</ul>
+<section id="id1">
+<h3>Examples<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<section id="id2">
+<h4>Vector addition<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-2-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-2-2-0" name="2-0" role="tab" tabindex="0">CUDA C</button><button aria-controls="panel-2-2-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-2-2-1" name="2-1" role="tab" tabindex="-1">CUDA Fortran</button><button aria-controls="panel-2-2-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-2-2-2" name="2-2" role="tab" tabindex="-1">HIP C</button><button aria-controls="panel-2-2-3" aria-selected="false" class="sphinx-tabs-tab" id="tab-2-2-3" name="2-3" role="tab" tabindex="-1">HIP Fortran</button></div><div aria-labelledby="tab-2-2-0" class="sphinx-tabs-panel" id="panel-2-2-0" name="2-0" role="tabpanel" tabindex="0"><div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">vecAdd</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">b_d</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">c_d</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">N</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">c_d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a_d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b_d</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-2-2-1" class="sphinx-tabs-panel" hidden="true" id="panel-2-2-1" name="2-1" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-2-2-2" class="sphinx-tabs-panel" hidden="true" id="panel-2-2-2" name="2-2" role="tabpanel" tabindex="0"><div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-2-2-3" class="sphinx-tabs-panel" hidden="true" id="panel-2-2-3" name="2-3" role="tabpanel" tabindex="0"><div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="n">WRITEME</span><span class="w"></span>
+</pre></div>
+</div>
+</div></div>
+</section>
+<section id="id3">
+<h4>Reduction<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h4>
+<p>WRITEME</p>
+</section>
+</section>
+<section id="pros-and-cons-of-kernel-based-frameworks">
+<h3>Pros and cons of kernel-based frameworks<a class="headerlink" href="#pros-and-cons-of-kernel-based-frameworks" title="Permalink to this heading"></a></h3>
+<p>WRITEME</p>
+</section>
+</section>
+<section id="high-level-language-support">
+<h2>High-level language support<a class="headerlink" href="#high-level-language-support" title="Permalink to this heading"></a></h2>
+<p>WRITEME: General paragraph about modern GPU libraries for high-level languages:</p>
+<ul class="simple">
+<li><p>Python</p></li>
+<li><p>Julia</p></li>
+<li><p>SYCL</p></li>
+</ul>
+</section>
+<section id="cost-benefit-analysis">
+<h2>Cost-benefit analysis<a class="headerlink" href="#cost-benefit-analysis" title="Permalink to this heading"></a></h2>
+<p>WRITEME begin</p>
+<ul class="simple">
+<li><p>how to choose between frameworks?</p></li>
+<li><p>depends on:</p>
+<ul>
+<li><p>specifics of the problem at hand</p></li>
+<li><p>whether starting from scratch or from existing code</p></li>
+<li><p>background knowledge of programmer</p></li>
+<li><p>how much time can be invested</p></li>
+<li><p>performance needs</p></li>
+</ul>
+</li>
+</ul>
+<p>WRITEME end</p>
+<div class="admonition-keypoints keypoints admonition" id="keypoints-0">
+<p class="admonition-title">Keypoints</p>
+<ul class="simple">
+<li><p>k1</p></li>
+<li><p>k2</p></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../gpu-porting/" class="btn btn-neutral float-left" title="Preparing code for GPU porting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../example-heat/" class="btn btn-neutral float-right" title="Problem example: heat equation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, The contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
